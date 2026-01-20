@@ -6,3 +6,7 @@
 .env
 *.Rproj
 __pycache__
+*.png
+Video2.py
+video.py
+*.mp4
