@@ -1,13 +1,13 @@
 from serpapi import GoogleSearch
 import os
 from dotenv import load_dotenv
-import urllib.request
+import requests
 
 load_dotenv()
 
 api_key = os.environ['SERPAPI_API_KEY']
 
-for i in range(1): # 3
+for i in range(3): # 3
   params = {
     "engine": "google", # google_images
     "q": "2024. évi vállalati pénzügyi adatok és jelentések pdf",
@@ -16,7 +16,7 @@ for i in range(1): # 3
     "hl": "hu",
     "google_domain": "google.hu",
     "device": "desktop",
-    "num": "10", # 30, 100
+    "num": "30", # 10, 30, 100
     "safe": "off",
     "start": i * 10 # 0 10 20
   }
@@ -26,15 +26,26 @@ for i in range(1): # 3
   results = search.get_dict()
 
   organic_results = results.get("organic_results", [])
-
-  opener = urllib.request.build_opener()
-  opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')] # ('User-Agent', 'MyApp/1.0')
-  urllib.request.install_opener(opener)
+  
+  headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+  }
+  
   for res in organic_results:
     name = res["title"]
     url = res["link"]
+    number = res.get("position")
+    number = number + (i * 10)
+    name = name.replace("/", "_")
+    name = name.replace("|", "_")
+    name = f"{number}_{name}"
     try:
-      urllib.request.urlretrieve(url, f"{name}.pdf")
+      response = requests.get(url, headers = headers)
+      
+      with open(f"{name}.pdf", "wb") as f:
+        f.write(response.content)
+      
+      print(f"Sikeres letöltés: {name}")
     except Exception as e:
       print(f"Nem sikerült letölteni: {name} és {url}. A hibaüzenet: {e}")
 
